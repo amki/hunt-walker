@@ -1,18 +1,23 @@
-﻿using Dalamud.Game.Command;
+using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
-using SamplePlugin.Windows;
+using HuntWalker.Windows;
+using HuntWalker.Managers;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace SamplePlugin;
+namespace HuntWalker;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    //[PluginService] internal static IDalamudPluginInterface pluginInterface { get; private set; } = null!;
+    public IDalamudPluginInterface pluginInterface;
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
+    //[PluginService] internal static IChatGui chatGui { get; private set; } = null!;
+    //[PluginService] internal static IPluginLog pluginLog { get; private set; } = null!;
 
     private const string CommandName = "/pmycommand";
 
@@ -22,15 +27,29 @@ public sealed class Plugin : IDalamudPlugin
     private ConfigWindow ConfigWindow { get; init; }
     private MainWindow MainWindow { get; init; }
 
-    public Plugin()
+    public Plugin(IDalamudPluginInterface pluginInterface,
+        IChatGui chatGui,
+        IPluginLog pluginLog
+        )
     {
-        Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        this.pluginInterface = pluginInterface;
+        Dalamud.Initialize(pluginInterface);
+        Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         // you might normally want to embed resources and load them from the manifest stream
-        var goatImagePath = Path.Combine(PluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
+        var goatImagePath = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "goat.png");
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(pluginInterface)
+            .AddSingleton(chatGui)
+            .AddSingleton(pluginLog)
+            .AddSingleton<Configuration>()
+            .AddSingleton<MovementManager>()
+            .AddSingleton<MainWindow>()
+            .BuildServiceProvider();
 
         ConfigWindow = new ConfigWindow(this);
-        MainWindow = new MainWindow(this, goatImagePath);
+
+        MainWindow = serviceProvider.GetRequiredService<MainWindow>();
 
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
@@ -40,14 +59,14 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "A useful message to display in /xlhelp"
         });
 
-        PluginInterface.UiBuilder.Draw += DrawUI;
+        pluginInterface.UiBuilder.Draw += DrawUI;
 
         // This adds a button to the plugin installer entry of this plugin which allows
         // to toggle the display status of the configuration ui
-        PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
+        pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
 
         // Adds another button that is doing the same but for the main ui of the plugin
-        PluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
+        pluginInterface.UiBuilder.OpenMainUi += ToggleMainUI;
     }
 
     public void Dispose()
@@ -71,3 +90,4 @@ public sealed class Plugin : IDalamudPlugin
     public void ToggleConfigUI() => ConfigWindow.Toggle();
     public void ToggleMainUI() => MainWindow.Toggle();
 }
+

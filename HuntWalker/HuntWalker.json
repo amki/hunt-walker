@@ -1,0 +1,12 @@
+{
+  "Author": "amki",
+  "Name": "Hunt Walker",
+  "Punchline": "Automagically find hunt marks",
+  "Description": "Automagically find hunt marks!",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "hunt",
+    "vnavmesh",
+    "goats"
+  ]
+}
