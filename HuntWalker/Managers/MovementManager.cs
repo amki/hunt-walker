@@ -7,6 +7,7 @@ using Dalamud.Plugin.Services;
 using System.Numerics;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Dalamud.Game.ClientState.Conditions;
+using HuntWalker.Models;
 
 namespace HuntWalker.Managers;
 
@@ -310,7 +311,6 @@ public class MovementManager : IDisposable {
         _log.Debug("------ Wow we are instanced!");
         Dalamud.Framework.Update += Tick;
     }
-    /*
     public void OnMarkSeen(TrainMob mark)
     {
         _chat.Print("We saw " + mark.Name + "("+ mark.MobId+ ")");
@@ -320,7 +320,6 @@ public class MovementManager : IDisposable {
             _chat.Print(_marksFoundInArea+"/2 marks found in area.");
         }
     }
-    */
 
     private unsafe void DoUpdate(IFramework framework)
     {
