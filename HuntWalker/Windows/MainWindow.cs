@@ -31,7 +31,7 @@ public class MainWindow : Window, IDisposable
         this.config = config;
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(375, 330),
+            MinimumSize = new Vector2(375, 430),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
         chat.Print("can act? "+movementManager.CanAct);
